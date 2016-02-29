@@ -1,5 +1,5 @@
 
-import java.io.BufferedReader;
+import java.io.BufferedReader; //To read in user input
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Random; //to randomly select values
@@ -7,6 +7,7 @@ import java.util.Random; //to randomly select values
 /**
  *
  * @author Ben Rhuman, Isaac Sotelo, Brendan Tracey
+ * February 29, 2016
  */
 public class TreeHashApp {
 
@@ -130,8 +131,81 @@ class Tree {
         }
     }
 
-    public void delete(int val) { //Removes desired node from tree
+    public void delete(int val) { // delete the node with the requested value
+        Node current = root;
+        Node parent = root;
+        boolean isLeftChild = true;
+        while (current.data != val) { // search for val
+            parent = current;
+            if (val < current.data) {
+                isLeftChild = true;
+                current = current.leftChild;
+            } else {
+                isLeftChild = false;
+                current = current.rightChild;
+            }
+            if (current == null) {
+                System.out.println(val + " does not exist."); // Got to end of tree without finding the requested node
+                return;
+            }
+        } // Found val in the tree
+        if (current.leftChild == null && current.rightChild == null) { //If there are no children it can just be deleted
+            if (current == root) {
+                root = null;
+            } else if (isLeftChild) {
+                parent.leftChild = null;
+            } else {
+                parent.rightChild = null;
+            }
+        } // if no right child, replace with left subtree
+        else if (current.rightChild == null) {
+            if (current == root) {
+                root = current.leftChild;
+            } else if (isLeftChild) {
+                parent.leftChild = current.leftChild;
+            } else {
+                parent.rightChild = current.leftChild;
+            }
+        } // if no left child, replace with right subtree
+        else if (current.leftChild == null) {
+            if (current == root) {
+                root = current.rightChild;
+            } else if (isLeftChild) {
+                parent.leftChild = current.rightChild;
+            } else {
+                parent.rightChild = current.rightChild;
+            }
+        } else {
+            // get successor of node to delete
+            Node successor = getSuccessor(current);
+            // connect parent of current to successor instead
+            if (current == root) {
+                root = successor;
+            } else if (isLeftChild) {
+                parent.leftChild = successor;
+            } else {
+                parent.rightChild = successor;
+            }
+            // connect successor to current's left child
+            successor.leftChild = current.leftChild;
+        }
+        System.out.println(val + " was successfully deleted."); //Deletion was successful
+    }
 
+    private Node getSuccessor(Node parent) { //Find the successor of the node to delete, and returns it
+        Node successorParent = parent;
+        Node successor = parent;
+        Node current = parent.rightChild;
+        while (current != null) {
+            successorParent = successor;
+            successor = current;
+            current = current.leftChild;
+        }
+        if (successor != parent.rightChild) {
+            successorParent.leftChild = successor.rightChild;
+            successor.rightChild = parent.rightChild;
+        }
+        return successor;
     }
 
     public void find(int val) { //Searches through based on value to determine if the key is in the hash
@@ -140,7 +214,7 @@ class Tree {
         } else {
             Node current = root;
             while (true) {
-                if (val == current.data) {  
+                if (val == current.data) {
                     System.out.println("Found " + val);
                     return;
                 } else if (val < current.data) {
@@ -151,14 +225,13 @@ class Tree {
                     }
                 } else {
                     current = current.rightChild;
-                    if (current == null) { 
+                    if (current == null) {
                         System.out.println("Could not find " + val);
                         return;
                     }
                 }
             }
         }
-        return;
     }
 } //End of Tree Class
 ////////////////////////////////////////////////////////////////////
@@ -196,25 +269,25 @@ class HashTable {
     }
 
     public void insert(int val) { //Creates tree and node then inserts it into the array
-        if (hash[val % size] == null) {
-            hash[val % size] = new Tree();
-        } 
-        
+        if (hash[Math.abs(val) % size] == null) {
+            hash[Math.abs(val) % size] = new Tree();
+        }
+
         Node n = new Node(val);
-        hash[val % size].insert(n);
+        hash[Math.abs(val) % size].insert(n);
     }
 
     public void delete(int val) { //Deletes the node containing the key if it can be found.
-        if (hash[val % size] != null) {
-            hash[val % size].delete(val);
+        if (hash[Math.abs(val) % size] != null) {
+            hash[Math.abs(val) % size].delete(val);
         } else {
             System.out.println(val + " does not exist.");
         }
     }
 
     public void find(int val) { //Looks for the key based on the value in the binary search tree
-        if (hash[val % size] != null) {
-            hash[val % size].find(val);
+        if (hash[Math.abs(val) % size] != null) {
+            hash[Math.abs(val) % size].find(val);
         } else {
             System.out.println("Could not find " + val);
         }
